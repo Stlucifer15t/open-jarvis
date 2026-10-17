@@ -29,7 +29,8 @@ class AgentCore(private val context: Context) {
     private val graphifyRepo = GraphifyRepository(context)
     private val analysisEngine = AnalysisEngine(context)
     private val universalAdapter = UniversalAdapter(context)
-    private val screenReader = ScreenReader(context)
+    private val screenReader: ScreenReader?
+        get() = JarvisAccessibilityService.instance?.let { ScreenReader(it) }
     private val visionModule = VisionModule.getInstance(context)
     private val taskRouter = TaskRouter(context)
     private val appAnalyzer = AppAnalyzer(context)
@@ -113,7 +114,7 @@ fun executeTask(cleanCommand: String) {
                 _state.value = AgentState.Running("reading screen...")
                 
                 val screenText = withContext(Dispatchers.IO) {
-                    screenReader.extractAllText()
+                    screenReader?.extractAllText() ?: ""
                 }
                 
                 _state.value = AgentState.Running("getting context...")
@@ -192,6 +193,7 @@ fun executeTask(cleanCommand: String) {
             }
         }
     }
+    }
 
     suspend fun testConnection(): Result<Long> {
         return universalAdapter.testConnection()
@@ -269,7 +271,7 @@ fun executeTask(cleanCommand: String) {
                 }
                 Action.EXTRACT_TEXT -> {
                     val outputKey = action.outputKey ?: "page_text"
-                    val text = screenReader.extractAllText()
+                    val text = screenReader?.extractAllText() ?: ""
                     workingMemory.set(outputKey, text)
                 }
                 Action.ERROR -> {
