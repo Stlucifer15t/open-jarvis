@@ -20,7 +20,7 @@ class PromptEngine(private val context: Context) {
     suspend fun analyzeIntent(prompt: String): Intent = withContext(Dispatchers.IO) {
         val resolvedPrompt = conversationContext.resolveReferences(prompt)
         
-        val intentJson = IntentAnalyzer.analyze(resolvedPrompt)
+        val intentJson = IntentAnalyzer.analyze(context, resolvedPrompt)
         
         parseIntentFromJson(resolvedPrompt, intentJson)
     }
@@ -191,7 +191,7 @@ Analyze the user's prompt and extract:
 Respond ONLY with JSON matching Intent schema.
     """.trimIndent()
     
-    suspend fun analyze(prompt: String): JSONObject = withContext(Dispatchers.IO) {
+    suspend fun analyze(context: Context, prompt: String): JSONObject = withContext(Dispatchers.IO) {
         val adapter = UniversalAdapter(context)
         val fullPrompt = "$systemPrompt\n\nUser prompt: $prompt"
         

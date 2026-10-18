@@ -31,7 +31,7 @@ class SelfHealingExecutor(private val context: Context) {
             return ActionResult.Failed("Could not complete after $maxAttempts attempts")
         }
         
-        val currentScreen = screenReader.extractAllText()
+        val currentScreen = screenReader?.extractAllText() ?: ""
         
         val healingPrompt = buildHealingPrompt(action, context, currentScreen, attempt)
         

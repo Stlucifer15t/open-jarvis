@@ -40,6 +40,17 @@ class JarvisNotificationListener : NotificationListenerService() {
         fun shouldProcessNotification(packageName: String): Boolean {
             return packageName !in PRIVACY_PROTECTED_APPS
         }
+        
+        private val messagingApps = listOf(
+            "com.whatsapp",
+            "com.google.android.apps.messaging",
+            "com.samsung.android.messaging",
+            "com.instagram.android",
+            "com.facebook.orca",
+            "org.telegram.messenger",
+            "com.slack",
+            "com.discord"
+        )
     }
     
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -79,7 +90,7 @@ class JarvisNotificationListener : NotificationListenerService() {
             sbn.packageName
         }
         
-        val isMessaging = sbn.packageName in MESSAGING_APPS
+        val isMessaging = sbn.packageName in messagingApps
         
         val sender = if (isMessaging) {
             extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
@@ -153,19 +164,4 @@ class JarvisNotificationListener : NotificationListenerService() {
         val isMessaging: Boolean,
         val sender: String?
     )
-    
-    companion object {
-        private val messagingApps = listOf(
-            "com.whatsapp",
-            "com.google.android.apps.messaging",
-            "com.samsung.android.messaging",
-            "com.instagram.android",
-            "com.facebook.orca",
-            "org.telegram.messenger",
-            "com.slack",
-            "com.discord"
-        )
-        
-        val MESSAGING_APPS = messagingApps
-    }
 }

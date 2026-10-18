@@ -68,21 +68,12 @@ class ScreenshotCapture(private val context: Context) {
     fun capture(): Bitmap? {
         if (!isCapturing || imageReader == null) return null
 
-        val surface = imageReader?.surface ?: return null
-        
-        try {
-            mediaProjection?.createVirtualDisplay(
-                "Screenshot",
-                width,
-                height,
-                density,
-                surface,
-                null,
-                handler
-            )
+        val reader = imageReader ?: return null
+        val surface = reader.surface
 
-            val image = imageReader?.acquireLatestImage()
-            return image?.let { img ->
+        try {
+            val image = reader.acquireLatestImage() ?: return null
+            return image.use { img ->
                 val planes = img.planes
                 val buffer: ByteBuffer = planes[0].buffer
                 val pixelStride = planes[0].pixelStride
@@ -95,17 +86,11 @@ class ScreenshotCapture(private val context: Context) {
                     Bitmap.Config.ARGB_8888
                 )
                 bitmap.copyPixelsFromBuffer(buffer)
-                img.close()
-
-                if (rowPadding > 0) {
-                    Bitmap.createBitmap(bitmap, 0, 0, img.width, img.height)
-                } else {
-                    bitmap
-                }
+                bitmap
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            return null
+            null
         }
     }
 
