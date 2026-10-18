@@ -1,4 +1,11 @@
-# Open Jarvis ProGuard Rules (R8 Full Mode)
+# Open Jarvis ProGuard Rules
+
+# CRITICAL: Keep all activities declared in AndroidManifest
+-keep public class * extends android.app.Activity
+-keep public class * extends androidx.activity.ComponentActivity
+-keep public class com.openjarvis.ui.MainActivity { *; }
+-keep public class com.openjarvis.ui.SettingsActivity { *; }
+-keep public class com.openjarvis.ui.OnboardingActivity { *; }
 
 # Keep Room entities
 -keep class com.openjarvis.graphify.nodes.** { *; }
@@ -57,11 +64,11 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# R8 optimizations
--allowaccessmodification
--repackageclasses
--mergeinterfacesaggressively
--optimizationpasses 5
+# R8 optimizations — conservative to avoid Compose/Activity issues
+# -allowaccessmodification
+# -repackageclasses        # breaks Activities/Compose, do NOT enable
+# -mergeinterfacesaggressively
+# -optimizationpasses 5
 
 # Remove logging in release
 -assumenosideeffects class android.util.Log {
