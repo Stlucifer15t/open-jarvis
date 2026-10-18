@@ -81,6 +81,11 @@ class SelfHealingExecutor(private val context: Context) {
         }
     }
     
+    private fun buildHealingPrompt(
+        action: Action,
+        context: ExecutionContext,
+        currentScreen: String,
+        attempt: Int
     ): Pair<String, String> {
         val system = """
 Action failed: ${action.action} — text=${action.text ?: ""}, target=${action.packageName ?: ""}
