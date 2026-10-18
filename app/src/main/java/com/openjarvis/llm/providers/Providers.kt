@@ -236,11 +236,12 @@ class OpenAIProvider(
 }
 
 class OllamaProvider(
-    private val baseUrl: String,
+    baseUrl: String,
     private val model: String = "llama3"
 ) : LLMProvider {
     
     override val name: String = "Ollama"
+    override val baseUrl: String = baseUrl.trimEnd('/')
     
     override suspend fun complete(
         systemPrompt: String,
@@ -305,12 +306,13 @@ class OllamaProvider(
 }
 
 class CustomProvider(
-    private val baseUrl: String,
+    baseUrl: String,
     private val apiKey: String = "",
     private val model: String = "gpt-4o-mini"
 ) : LLMProvider {
     
     override val name: String = "Custom"
+    override val baseUrl: String = baseUrl.trimEnd('/')
     
     override suspend fun complete(
         systemPrompt: String,

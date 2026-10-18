@@ -39,19 +39,19 @@ class AutomationManager(private val context: Context) {
             scheduleAutomation(automation)
         }
         
-        _automationsFlow.value = dao.getAll()
+        _automationsFlow.value = dao.getAll().map { it.toModel() }
     }
     
     suspend fun deleteAutomation(id: String) = withContext(Dispatchers.IO) {
         cancelAutomation(id)
         dao.delete(id)
-        _automationsFlow.value = dao.getAll()
+        _automationsFlow.value = dao.getAll().map { it.toModel() }
     }
     
     suspend fun toggleAutomation(id: String, enabled: Boolean) = withContext(Dispatchers.IO) {
         val automation = dao.getById(id)?.toModel() ?: return@withContext
         val updated = automation.copy(enabled = enabled)
-        dao.update(updated)
+        dao.update(updated.toEntity())
         
         if (enabled) {
             scheduleAutomation(updated)
@@ -78,7 +78,7 @@ class AutomationManager(private val context: Context) {
         )
         
         val request = when (val schedule = automation.schedule) {
-            is AutomationSchedule.Daily -> {
+            is AutomationSchedule.Daily ->
                 PeriodicWorkRequestBuilder<AutomationWorker>(
                     24, TimeUnit.HOURS,
                     15, TimeUnit.MINUTES
@@ -88,8 +88,7 @@ class AutomationManager(private val context: Context) {
                     .setInitialDelay(calculateDelay(schedule.hour, schedule.minute), TimeUnit.MILLISECONDS)
                     .addTag(automation.id)
                     .build()
-            }
-            is AutomationSchedule.Weekly -> {
+            is AutomationSchedule.Weekly ->
                 PeriodicWorkRequestBuilder<AutomationWorker>(
                     7, TimeUnit.DAYS,
                     15, TimeUnit.MINUTES
@@ -99,8 +98,7 @@ class AutomationManager(private val context: Context) {
                     .setInitialDelay(calculateWeeklyDelay(schedule.dayOfWeek, schedule.hour, schedule.minute), TimeUnit.MILLISECONDS)
                     .addTag(automation.id)
                     .build()
-            }
-            is AutomationSchedule.Interval -> {
+            is AutomationSchedule.Interval ->
                 PeriodicWorkRequestBuilder<AutomationWorker>(
                     schedule.intervalMs, TimeUnit.MILLISECONDS,
                     1, TimeUnit.MINUTES
@@ -109,7 +107,6 @@ class AutomationManager(private val context: Context) {
                     .setInputData(inputData)
                     .addTag(automation.id)
                     .build()
-            }
             is AutomationSchedule.Once -> {
                 val delay = schedule.atMs - System.currentTimeMillis()
                 if (delay <= 0) return
@@ -123,8 +120,14 @@ class AutomationManager(private val context: Context) {
             }
         }
         
-        WorkManager.getInstance(context)
-            .enqueueUniqueWork(automation.id, ExistingWorkPolicy.REPLACE, request)
+        when (request) {
+            is OneTimeWorkRequest ->
+                WorkManager.getInstance(context)
+                    .enqueueUniqueWork(automation.id, ExistingWorkPolicy.REPLACE, request)
+            is PeriodicWorkRequest ->
+                WorkManager.getInstance(context)
+                    .enqueueUniquePeriodicWork(automation.id, ExistingPeriodicWorkPolicy.UPDATE, request)
+        }
     }
     
     private fun cancelAutomation(id: String) {

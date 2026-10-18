@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -566,7 +567,7 @@ fun FloatingLabelTextField(
                     fontSize = 14.sp,
                     color = VoidColor.TextPrimary
                 ),
-                visualTransformation = if (isPassword && !showPassword) 
+                visualTransformation = if (isPassword && !visible)
                     PasswordVisualTransformation() else VisualTransformation.None
             )
         }

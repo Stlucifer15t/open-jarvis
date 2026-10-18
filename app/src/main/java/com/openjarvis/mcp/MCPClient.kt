@@ -3,6 +3,8 @@ package com.openjarvis.mcp
 import com.openjarvis.llm.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
@@ -37,11 +39,7 @@ class MCPClient(
             
             val request = Request.Builder()
                 .url(server.url)
-                .post(okhttp3.RequestBody.create(
-                    "application/json".toByteArray(),
-                    okhttp3.MediaType.get("application/json"),
-                    requestBody
-                ))
+                .post(requestBody.toRequestBody("application/json".toMediaType()))
                 .build()
             
             client.newCall(request).execute().use { response ->
@@ -80,11 +78,7 @@ class MCPClient(
             
             val request = Request.Builder()
                 .url(server.url)
-                .post(okhttp3.RequestBody.create(
-                    "application/json".toByteArray(),
-                    okhttp3.MediaType.get("application/json"),
-                    requestBody
-                ))
+                .post(requestBody.toRequestBody("application/json".toMediaType()))
                 .build()
             
             client.newCall(request).execute().use { response ->
@@ -129,11 +123,7 @@ class MCPClient(
             
             val request = Request.Builder()
                 .url(server.url)
-                .post(okhttp3.RequestBody.create(
-                    "application/json".toByteArray(),
-                    okhttp3.MediaType.get("application/json"),
-                    requestBody
-                ))
+                .post(requestBody.toRequestBody("application/json".toMediaType()))
                 .build()
             
             client.newCall(request).execute().use { response ->

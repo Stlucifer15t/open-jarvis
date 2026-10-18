@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 class VoiceManager(private val context: Context) {
 
@@ -173,6 +174,6 @@ class VoiceManager(private val context: Context) {
     fun release() {
         sttEngine.release()
         ttsEngine.release()
-        scope.cancel()
+        scope.coroutineContext[Job]?.cancel()
     }
 }

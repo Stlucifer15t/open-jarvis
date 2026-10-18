@@ -5,6 +5,7 @@ import com.openjarvis.graphify.GraphifyRepository
 import com.openjarvis.llm.LLMProvider
 import com.openjarvis.llm.UniversalAdapter
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.json.JSONException
 
 class ProviderFallbackChain(private val context: Context) {
     
@@ -35,12 +36,18 @@ class ProviderFallbackChain(private val context: Context) {
             val result = runCatching { provider.complete(system, user) }
             
             if (result.isSuccess) {
-                return result
+                @Suppress("UNCHECKED_CAST")
+                return result as Result<String>
             }
             
             val errorMsg = result.exceptionOrNull()?.message ?: ""
             
-            graphifyRepo.logProviderFailure(name, errorMsg)
+            graphifyRepo.logTask(
+                command = "[provider-fallback] $name",
+                result = "failed: $errorMsg",
+                provider = name,
+                latencyMs = 0
+            )
             
             if (errorMsg.contains("429")) {
                 cooldownMap[name] = System.currentTimeMillis() + 60_000
@@ -57,8 +64,7 @@ class ProviderFallbackChain(private val context: Context) {
     
     private fun getProvider(name: String, adapter: UniversalAdapter): LLMProvider {
         return adapter.getActiveProvider()
-    }
-    
+    }    
     private fun isInCooldown(name: String): Boolean {
         val cooldownUntil = cooldownMap[name] ?: return false
         return System.currentTimeMillis() < cooldownUntil

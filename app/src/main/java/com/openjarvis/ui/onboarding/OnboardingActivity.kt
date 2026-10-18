@@ -27,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import com.openjarvis.ui.theme.VoidColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 class OnboardingActivity : ComponentActivity() {
     
@@ -304,6 +305,7 @@ private fun ProviderCard(name: String, subtitle: String, modifier: Modifier = Mo
 private fun TryItScreen(onBack: () -> Unit, onSuccess: () -> Unit) {
     var command by remember { mutableStateOf("Open Chrome and search for weather") }
     var isRunning by remember { mutableStateOf(false) }
+    val runScope = rememberCoroutineScope()
     
     Column(
         modifier = Modifier.fillMaxSize()
@@ -360,7 +362,7 @@ private fun TryItScreen(onBack: () -> Unit, onSuccess: () -> Unit) {
         Button(
             onClick = {
                 isRunning = true
-                lifecycleScope.launch {
+                runScope.launch {
                     delay(2000)
                     isRunning = false
                     onSuccess()

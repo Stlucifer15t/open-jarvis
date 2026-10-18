@@ -4,6 +4,7 @@ import android.app.Notification
 import android.content.pm.PackageManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import com.openjarvis.accessibility.JarvisAccessibilityService
 import com.openjarvis.graphify.GraphifyRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,8 +52,11 @@ class JarvisNotificationListener : NotificationListenerService() {
         
         scope.launch {
             try {
-                graphifyRepo?.logNotification(
-                    "${parsed.packageName}: ${parsed.title}"
+                graphifyRepo?.logTask(
+                    command = "notification: ${parsed.packageName}",
+                    result = "${parsed.title}: ${parsed.body}".take(200),
+                    provider = "notification",
+                    latencyMs = 0
                 )
             } catch (e: Exception) { }
         }
@@ -75,10 +79,10 @@ class JarvisNotificationListener : NotificationListenerService() {
             sbn.packageName
         }
         
-        val isMessaging = sbn.packageName in messagingApps
+        val isMessaging = sbn.packageName in MESSAGING_APPS
         
         val sender = if (isMessaging) {
-            extras.getCharSequence(Notification.EXTRA_SENDER_TEXT)?.toString()
+            extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
         } else null
         
         return JarvisNotification(
@@ -161,5 +165,7 @@ class JarvisNotificationListener : NotificationListenerService() {
             "com.slack",
             "com.discord"
         )
+        
+        val MESSAGING_APPS = messagingApps
     }
 }
