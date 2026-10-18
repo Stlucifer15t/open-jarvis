@@ -90,7 +90,7 @@ class ScreenshotCapture(private val context: Context) {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            return null
         }
     }
 
